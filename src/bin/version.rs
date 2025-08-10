@@ -3,7 +3,7 @@ use sdkran::utils::{
     directory_utils::infer_sdkman_dir,
     file_utils::{check_file_exists, read_file_content},
 };
-use std::{io::Write, path::PathBuf, process};
+use std::{io::Write, process};
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 
 const CLI_VERSION_FILE: &str = "version";
@@ -24,27 +24,22 @@ fn main() {
             process::exit(1);
         }
     };
-
-    let cli_version_file: PathBuf = sdkman_dir.join(VAR_DIR).join(CLI_VERSION_FILE);
+    let cli_version_file = sdkman_dir.join(VAR_DIR).join(CLI_VERSION_FILE);
 
     let cli_version = match check_file_exists(&cli_version_file) {
-        Ok(true) => match read_file_content(&cli_version_file) {
+        Ok(valid_path) => match read_file_content(&valid_path) {
             Ok(content) => content,
             Err(e) => {
                 print_error(&mut stdout, &format!("Failed to read file content: {}", e));
-                process::exit(1);
+                std::process::exit(1);
             }
         },
-        Ok(false) => {
-            print_error(&mut stdout, "CLI version file not found.");
-            process::exit(1);
-        }
         Err(e) => {
             print_error(
                 &mut stdout,
                 &format!("Failed to check file existence: {}", e),
             );
-            process::exit(1);
+            std::process::exit(1);
         }
     };
     print_info(&mut stdout, "SDKRAN!".to_string());

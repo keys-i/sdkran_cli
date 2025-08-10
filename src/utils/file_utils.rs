@@ -1,18 +1,27 @@
-use std::{fs, path::PathBuf};
+use std::{
+    fs,
+    io::{Error, ErrorKind},
+    path::{Path, PathBuf},
+};
 
-pub fn check_file_exists(path: PathBuf) -> PathBuf {
-    if path.exists() && path.is_file() {
-        path
+pub fn check_file_exists<P: AsRef<Path>>(path: P) -> Result<PathBuf, Error> {
+    let path_buf = path.as_ref().to_path_buf();
+    if path_buf.exists() && path_buf.is_file() {
+        Ok(path_buf)
     } else {
-        panic!("not a valid path: {}", path.to_str().unwrap())
+        Err(Error::new(
+            ErrorKind::NotFound,
+            format!("Not a valid file path: {}", path_buf.display()),
+        ))
     }
 }
 
-pub fn read_file_content(path: PathBuf) -> Option<String> {
-    match fs::read_to_string(path) {
-        Ok(s) => Some(s),
-        Err(_) => None,
+pub fn read_file_content<P: AsRef<Path>>(path: P) -> Result<String, Error> {
+    let content = fs::read_to_string(path)?;
+    let trimmed = content.trim().to_string();
+    if trimmed.is_empty() {
+        Err(Error::new(ErrorKind::InvalidData, "File is empty"))
+    } else {
+        Ok(trimmed)
     }
-    .filter(|s| !s.trim().is_empty())
-    .map(|s| s.trim().to_string())
 }
