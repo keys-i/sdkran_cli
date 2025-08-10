@@ -14,3 +14,6 @@ fn fallback_sdkman_dir() -> PathBuf {
         .map(|dir| dir.home_dir().join(DEFAULT_SDKMAN_HOME))
         .unwrap()
 }
+
+#[cfg(test)]
+mod tests {}
